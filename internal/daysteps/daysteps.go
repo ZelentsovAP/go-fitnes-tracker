@@ -4,6 +4,7 @@ package daysteps
 import (
 	"errors"
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 	"time"
@@ -45,7 +46,7 @@ func parsePackage(data string) (int, time.Duration, error) {
 	}
 	if tDuration <= 0 {
 		return 0, 0, errors.New("Время меньше или равно 0")
-	} // не факт что нужна
+	}
 
 	return steps, tDuration, nil
 }
@@ -54,11 +55,18 @@ func DayActionInfo(data string, weight, height float64) string {
 	//Получаем данные о кол-ве шагов и продолжит. прогулки
 	steps, tDuration, err := parsePackage(data)
 	if err != nil {
-		fmt.Println(err)
+		//fmt.Println(err)
+		log.Println(err)
 		return ""
 	}
 	if steps <= 0 {
-		fmt.Print("Нерпвильное кол-во шагов")
+		err = errors.New("Кол-во шагов <= 0")
+		log.Println(err)
+		return ""
+	}
+	if tDuration <= 0 {
+		err = errors.New("Время меньше или больше 0")
+		log.Println(err)
 		return ""
 	}
 	distance := float64(steps) * stepLength
@@ -66,9 +74,10 @@ func DayActionInfo(data string, weight, height float64) string {
 	caloriesSpent, err := spentcalories.WalkingSpentCalories(steps, weight, height, tDuration)
 	if err != nil {
 		s := fmt.Sprintf("Ошибка рассчёта потраченых калорий: %v", err)
+		log.Println(err)
 		return s
 	}
-	var s string = fmt.Sprintf("количество шагов: %d.\n", steps)
+	var s string = fmt.Sprintf("Количество шагов: %d.\n", steps)
 	s += fmt.Sprintf("Дистанция составила %.2f км.\n", distance)
 	s += fmt.Sprintf("Вы сожгли %.2f ккал.\n", caloriesSpent)
 	return s
